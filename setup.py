@@ -1,8 +1,14 @@
+from gevent import monkey
+
+monkey.patch_all()
+
 from gevent.pywsgi import WSGIServer
+from gevent.pool import Pool
 from app.app import app
 from app.dind.lang import Language
 from app.dind.utils import init_images, clean_tmp_dir, prune_containers, prune_images
 import logging
+import config
 
 
 def clean():
@@ -23,6 +29,7 @@ if __name__ == "__main__":
     logging.getLogger().setLevel(logging.INFO)
     clean()
     initialize()
-    http_server = WSGIServer(("0.0.0.0", 5000), app)
+    pool = Pool(config.WSGI_MAX_CONNECTIONS)
+    http_server = WSGIServer(("0.0.0.0", 5000), app, spawn=pool)
     logging.info("Started WSGI server.")
     http_server.serve_forever()
