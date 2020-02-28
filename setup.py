@@ -1,19 +1,21 @@
 from gevent.pywsgi import WSGIServer
 from app.app import app
 from app.dind.lang import Language
-from app.dind.utils import initImages, cleanTmpDir
+from app.dind.utils import init_images, clean_tmp_dir, prune_containers, prune_images
 import logging
 
 
 def clean():
     logging.info("Cleaning temporary directory.")
-    cleanTmpDir()
+    clean_tmp_dir()
+    prune_containers()
+    prune_images()
     logging.info("Done cleaning temporary directory.")
 
 
 def initialize():
     logging.info("Initializing base images.")
-    initImages()
+    init_images()
     logging.info("Done initializing base images.")
 
 

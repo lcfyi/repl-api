@@ -6,10 +6,10 @@ import shutil
 import logging
 
 
-def initImages():
+def init_images():
     client = docker.DockerClient(base_url=config.DOCKER_BASE_URL)
     for lang in Language:
-        tmpPath = os.path.join(config.ROOT_DIR, config.TMP_DIR, lang.getTagname())
+        tmpPath = os.path.join(config.ROOT_DIR, config.TMP_DIR, lang.get_tag())
         os.mkdir(tmpPath)
         try:
             logging.info(f"Creating image {tmpPath}")
@@ -25,7 +25,7 @@ def initImages():
             with open(os.path.join(tmpPath, "Dockerfile"), "w") as file:
                 file.write(dockerfile)
 
-            client.images.build(path=tmpPath, tag=lang.getTagname(), rm=True)
+            client.images.build(path=tmpPath, tag=lang.get_tag(), rm=True)
         finally:
             logging.info(f"Done creating image {tmpPath}")
             for file in os.listdir(tmpPath):
@@ -33,9 +33,19 @@ def initImages():
             os.rmdir(tmpPath)
 
 
-def cleanTmpDir():
+def clean_tmp_dir():
     tmpDir = os.path.join(config.ROOT_DIR, config.TMP_DIR)
     for file in os.listdir(tmpDir):
         if file == ".gitkeep":
             continue
         shutil.rmtree(os.path.join(tmpDir, file))
+
+
+def prune_images():
+    client = docker.DockerClient(base_url=config.DOCKER_BASE_URL)
+    client.images.prune()
+
+
+def prune_containers():
+    client = docker.DockerClient(base_url=config.DOCKER_BASE_URL)
+    client.containers.prune()
