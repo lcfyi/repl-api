@@ -4,6 +4,8 @@ from .lang import Language
 import docker
 import shutil
 import logging
+import time
+import multiprocessing as mp
 
 
 def init_images():
@@ -58,3 +60,21 @@ def verify_valid_language(lang):
         return True
     except KeyError:
         return False
+
+
+def wait_for_connection(retries):
+    def connect():
+        client = docker.APIClient(base_url=config.DOCKER_BASE_URL)
+        time.sleep(0.5)
+        client.info()
+
+    for i in range(0, retries):
+        logging.info("Trying to connect to Docker daemon..")
+        m1 = mp.Process(target=connect)
+        m1.start()
+
+        m1.join()
+        if m1.exitcode == 0:
+            logging.info("Connected to Docker daemon.")
+            return True
+    return False

@@ -6,9 +6,16 @@ from gevent.pywsgi import WSGIServer
 from gevent.pool import Pool
 from app.app import app
 from app.dind.lang import Language
-from app.dind.utils import init_images, clean_tmp_dir, prune_containers, prune_images
+from app.dind.utils import (
+    init_images,
+    clean_tmp_dir,
+    prune_containers,
+    prune_images,
+    wait_for_connection,
+)
 import logging
 import config
+import sys
 
 
 def clean():
@@ -27,6 +34,8 @@ def initialize():
 
 if __name__ == "__main__":
     logging.getLogger().setLevel(logging.INFO)
+    if not wait_for_connection(config.DOCKER_CONNECTION_RETRIES):
+        sys.exit(1)
     clean()
     initialize()
     pool = Pool(config.WSGI_MAX_CONNECTIONS)
