@@ -92,7 +92,11 @@ class CodeRunner:
                         break
                 if self.container.status == "running":
                     logging.warn(f"Container {self.filename} timed out, killing.")
-                    self.container.kill()
+                    try:
+                        self.container.kill()
+                    except docker.errors.APIError:
+                        # TODO do some manual cleanup
+                        pass
                 return "".join(
                     [
                         "...\n"
