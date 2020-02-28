@@ -13,9 +13,9 @@ class RunnerAPI(views.MethodView):
         logging.info(data)
         if not data:
             return ("Malformed JSON data!", 400)
-        if "language" not in data:
+        if "language" not in data or not data["language"]:
             return ("Missing language field!", 400)
-        if "code" not in data:
+        if "code" not in data or not data["code"]:
             return ("Missing code field!", 400)
         if not verify_valid_language(data["language"]):
             return ("Invalid language!", 400)
