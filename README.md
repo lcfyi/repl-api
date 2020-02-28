@@ -26,3 +26,37 @@ echo alias docker-compose="'"'sudo docker run --rm \
 
 source ~/.bashrc
 ```
+
+### Swap
+
+Enable swap to eek out a bit more life from the free VMs:
+```
+# Confirm you have no swap
+sudo swapon -s
+
+# Allocate 1GB (or more if you wish) in /swapfile
+sudo fallocate -l 1G /swapfile
+
+# Make it secure
+sudo chmod 600 /swapfile
+ls -lh /swapfile
+
+# Activate it
+sudo mkswap /swapfile
+sudo swapon /swapfile
+
+# Confirm again there's indeed more memory now
+free -m
+sudo swapon -s
+
+# Configure fstab to use swap when instance restart
+sudo vim /etc/fstab
+
+# Add this line to /etc/fstab, save and exit
+/swapfile   none    swap    sw    0   0
+
+# Change swappiness to 20, so that swap is used only when 20% RAM is unused
+# The default is too high at 60
+echo 20 | sudo tee /proc/sys/vm/swappiness
+echo vm.swappiness = 20 | sudo tee -a /etc/sysctl.conf
+```
