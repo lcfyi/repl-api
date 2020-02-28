@@ -7,7 +7,7 @@ import logging
 
 
 def init_images():
-    client = docker.DockerClient(base_url=config.DOCKER_BASE_URL)
+    api = docker.APIClient(base_url=config.DOCKER_BASE_URL)
     for lang in Language:
         tmpPath = os.path.join(config.ROOT_DIR, config.TMP_DIR, lang.get_tag())
         os.mkdir(tmpPath)
@@ -25,7 +25,8 @@ def init_images():
             with open(os.path.join(tmpPath, "Dockerfile"), "w") as file:
                 file.write(dockerfile)
 
-            client.images.build(path=tmpPath, tag=lang.get_tag(), rm=True)
+            for output in api.build(path=tmpPath, tag=lang.get_tag(), rm=True):
+                logging.info(output.decode("utf-8"))
         finally:
             logging.info(f"Done creating image {tmpPath}")
             for file in os.listdir(tmpPath):
