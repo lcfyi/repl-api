@@ -6,4 +6,7 @@ RUN rm -f /sbin/apk \
      rm -rf /usr/share/apk \
      rm -rf /var/lib/apk
 
+RUN touch exit.jsh
+RUN echo -e "/exit\n" > exit.jsh
+
 RUN jshell --help
