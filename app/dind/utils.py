@@ -49,3 +49,11 @@ def prune_images():
 def prune_containers():
     client = docker.DockerClient(base_url=config.DOCKER_BASE_URL)
     client.containers.prune()
+
+
+def verify_valid_language(lang):
+    try:
+        Language[lang]
+        return True
+    except KeyError:
+        return False
