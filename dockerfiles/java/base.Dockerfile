@@ -4,8 +4,7 @@ RUN rm -f /sbin/apk \
      rm -rf /etc/apk \
      rm -rf /lib/apk \
      rm -rf /usr/share/apk \
-     rm -rf /var/lib/apk
-
-RUN echo -e "/exit\n" > exit.jsh
+     rm -rf /var/lib/apk \
+     echo -e "/exit\n" > exit.jsh
 
 RUN jshell --help
