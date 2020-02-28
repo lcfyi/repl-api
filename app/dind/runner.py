@@ -93,7 +93,15 @@ class CodeRunner:
                 if self.container.status == "running":
                     logging.warn(f"Container {self.filename} timed out, killing.")
                     self.container.kill()
-                return self.container.logs()
+                return "".join(
+                    [
+                        "...\n"
+                        if i == config.MAX_LINES_RETURNED - 1
+                        else line.decode("utf-8")
+                        for i, line in enumerate(self.container.logs(stream=True))
+                        if i < config.MAX_LINES_RETURNED
+                    ]
+                )
             except docker.errors.ContainerError:
                 return "Container failed to run!"
             finally:
