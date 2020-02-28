@@ -5,3 +5,7 @@ RUN rm -f /sbin/apk \
      rm -rf /lib/apk \
      rm -rf /usr/share/apk \
      rm -rf /var/lib/apk
+
+RUN npm i lodash
+RUN npm i axios
+
