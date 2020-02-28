@@ -3,7 +3,7 @@ version: '3.7'
 services:
     dind:
         image: docker:dind
-        command: dockerd --icc=false
+        command: dockerd --icc=false --userns-remap=default
         environment:
             - DOCKER_HOST=unix://var/run/docker.sock
         volumes:
