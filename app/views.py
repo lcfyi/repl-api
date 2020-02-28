@@ -11,15 +11,16 @@ class RunnerAPI(views.MethodView):
     def post(self):
         data = request.get_json(silent=True)
         logging.info(data)
-        if (
-            data
-            and "language" in data
-            and "code" in data
-            and verify_valid_language(data["language"])
-        ):
-            runner = CodeRunner(data["language"], data["code"])
-            output = runner.run()
-            return (output, 200)
-        else:
-            logging.info("Malformed request")
+        if not data:
             return ("Malformed JSON data!", 400)
+        if "language" not in data:
+            return ("Missing language field!", 400)
+        if "code" not in data:
+            return ("Missing code field!", 400)
+        if not verify_valid_language(data["language"]):
+            return ("Invalid language!", 400)
+        
+        runner = CodeRunner(data["language"], data["code"])
+        output = runner.run()
+        return (output, 200)
+
