@@ -1,0 +1,21 @@
+version: '3'
+
+services:
+    dind:
+        image: docker:dind
+        command: dockerd --host=tcp://0.0.0.0:2375
+        environment:
+            - DOCKER_HOST=tcp://dind:2375
+        privileged: true
+    api:
+        build: .
+        command: python -u setup.py
+        volumes:
+            - .:/api
+        ports:
+            - "5000:5000"
+        # By default, containers can see each other. This just aliases it
+        links:
+            - "dind:docker"
+        depends_on:
+            - dind
