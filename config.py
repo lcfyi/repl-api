@@ -1,6 +1,6 @@
 import os
 
-DOCKER_BASE_URL = "tcp://docker:2375"
+DOCKER_BASE_URL = "unix://var/run/docker.sock"
 DOCKER_MAX_MEM = "256m"
 DOCKER_MAX_CPU = "0"
 DOCKER_MAX_PID = 64
