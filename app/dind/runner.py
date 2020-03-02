@@ -89,18 +89,16 @@ class CodeRunner:
                         self.container.kill()
                     except docker.errors.APIError:
                         pass
-                output = "".join(
-                    [
-                        "...\n"
-                        if i == config.MAX_LINES_RETURNED - 1
-                        else line.decode("utf-8")
-                        for i, line in enumerate(self.container.logs(stream=True))
-                        if i < config.MAX_LINES_RETURNED
-                    ]
-                )
+                output = [
+                    "...\n"
+                    if i == config.MAX_LINES_RETURNED - 1
+                    else line.decode("utf-8")
+                    for i, line in enumerate(self.container.logs(stream=True))
+                    if i < config.MAX_LINES_RETURNED
+                ]
                 if timeout:
-                    output = ["Timed out."] + output
-                return output
+                    output = ["Timed out. Output:"] + output
+                return "".join(output)
             except docker.errors.ContainerError:
                 return "Container failed to run!"
             finally:
