@@ -6,42 +6,43 @@ import shutil
 import logging
 import time
 import multiprocessing as mp
+import json
 
 
 def init_images():
     api = docker.APIClient(base_url=config.DOCKER_BASE_URL)
-    for lang in Language:
-        tmpPath = os.path.join(config.ROOT_DIR, config.TMP_DIR, lang.get_tag())
-        os.mkdir(tmpPath)
-        try:
-            logging.info(f"Creating image {tmpPath}")
-            dockerfile = open(
-                os.path.join(
-                    config.ROOT_DIR,
-                    config.DOCKERFILES_DIR,
-                    str(lang),
-                    "base.Dockerfile",
-                )
-            ).read()
+    tmpPath = os.path.join(config.ROOT_DIR, config.TMP_DIR, str(hash(api)))
+    os.mkdir(tmpPath)
+    try:
+        logging.info(f"Creating base image.")
 
-            with open(os.path.join(tmpPath, "Dockerfile"), "w") as file:
-                file.write(dockerfile)
+        dockerfile = open(
+            os.path.join(config.ROOT_DIR, config.DOCKERFILES_DIR, "Dockerfile")
+        ).read()
 
-            for output in api.build(path=tmpPath, tag=lang.get_tag(), rm=True):
-                logging.info(output.decode("utf-8"))
-        finally:
-            logging.info(f"Done creating image {tmpPath}")
-            for file in os.listdir(tmpPath):
-                os.remove(os.path.join(tmpPath, file))
-            os.rmdir(tmpPath)
+        with open(os.path.join(tmpPath, "Dockerfile"), "w") as file:
+            file.write(dockerfile)
 
+        for output in api.build(path=tmpPath, tag=config.DOCKER_BASE_IMAGE, rm=True):
+            line = json.loads(output.decode("utf-8"))
+            if "status" in line:
+                logging.info(line["status"])
+            if "stream" in line:
+                logging.info(line["stream"])
+    finally:
+        logging.info(f"Done creating image {tmpPath}")
+        clean_dir(tmpPath)
+
+
+def clean_dir(directory):
+    shutil.rmtree(directory)
 
 def clean_tmp_dir():
     tmpDir = os.path.join(config.ROOT_DIR, config.TMP_DIR)
     for file in os.listdir(tmpDir):
         if file == ".gitkeep":
             continue
-        shutil.rmtree(os.path.join(tmpDir, file))
+        clean_dir(os.path.join(tmpDir, file))
 
 
 def prune_images():

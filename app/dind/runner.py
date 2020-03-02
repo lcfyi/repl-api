@@ -1,6 +1,7 @@
 from time import sleep
 import config
 from .lang import Language
+from .utils import clean_dir
 import docker
 import logging
 import os
@@ -14,39 +15,28 @@ class CodeRunner:
         self.filename = f"tmp{hash(self)}"
         self.client = docker.DockerClient(base_url=config.DOCKER_BASE_URL)
 
-        self.tmpPath = os.path.join(config.ROOT_DIR, config.TMP_DIR, self.filename)
+        self.tmp_path = os.path.join(config.ROOT_DIR, config.TMP_DIR, self.filename)
 
         self.container = None
         self.image = None
 
     def init(self):
-        os.mkdir(self.tmpPath)
+        os.mkdir(self.tmp_path)
         try:
-            dockerfile = (
-                open(
-                    os.path.join(
-                        config.ROOT_DIR,
-                        config.DOCKERFILES_DIR,
-                        str(self.lang),
-                        "base.Dockerfile",
-                    )
-                ).read()
-                + open(
-                    os.path.join(
-                        config.ROOT_DIR,
-                        config.DOCKERFILES_DIR,
-                        str(self.lang),
-                        "code.Dockerfile",
-                    )
-                ).read()
+            lang_dir = os.path.join(
+                config.ROOT_DIR, config.DOCKERFILES_DIR, str(self.lang)
             )
-            with open(os.path.join(self.tmpPath, "Dockerfile"), "w") as file:
-                file.write(dockerfile)
+            for file in os.listdir(lang_dir):
+                tmp_contents = open(os.path.join(lang_dir, file)).read()
+                if file == "Dockerfile":
+                    tmp_contents = tmp_contents.replace("{}", config.DOCKER_BASE_IMAGE)
+                with open(os.path.join(self.tmp_path, file), "w") as tmp_file:
+                    tmp_file.write(tmp_contents)
 
-            with open(os.path.join(self.tmpPath, "code"), "w") as file:
-                file.write(self.code)
+            with open(os.path.join(self.tmp_path, "code"), "w") as tmp_file:
+                tmp_file.write(self.code)
 
-            self.image, _ = self.client.images.build(path=self.tmpPath, rm=True)
+            self.image, _ = self.client.images.build(path=self.tmp_path, rm=True)
         except Exception as e:
             logging.error(e)
             self.cleanup()
@@ -83,7 +73,7 @@ class CodeRunner:
                     pids_limit=config.DOCKER_MAX_PID,
                     detach=True,
                     ulimits=[nproc_limit, core_limit, fsize_limit, cpu_limit],
-                    security_opt=["no-new-privileges"]
+                    security_opt=["no-new-privileges:true"],
                 )
                 start = time.time()
                 while time.time() - start <= config.DOCKER_TIMEOUT_S:
@@ -115,9 +105,7 @@ class CodeRunner:
             return "Build error."
 
     def cleanup(self):
-        for file in os.listdir(self.tmpPath):
-            os.remove(os.path.join(self.tmpPath, file))
-        os.rmdir(self.tmpPath)
+        clean_dir(self.tmp_path)
         try:
             if self.container:
                 self.container.remove(force=True)
