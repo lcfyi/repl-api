@@ -96,7 +96,6 @@ class CodeRunner:
                     try:
                         self.container.kill()
                     except docker.errors.APIError:
-                        # TODO do some manual cleanup
                         pass
                 return "".join(
                     [
@@ -111,16 +110,22 @@ class CodeRunner:
                 return "Container failed to run!"
             finally:
                 self.cleanup()
+        else:
+            # It shouldn't ever get to this point
+            return "Build error."
 
     def cleanup(self):
         for file in os.listdir(self.tmpPath):
             os.remove(os.path.join(self.tmpPath, file))
         os.rmdir(self.tmpPath)
         try:
-            self.container.remove(force=True)
-            self.client.images.remove(image=self.image.id)
+            if self.container:
+                self.container.remove(force=True)
+            if self.image:
+                self.client.images.remove(image=self.image.id)
         except AttributeError:
-            self.client.images.remove(image=self.image.id)
-        except docker.errors.APIError:
-            # TODO do some manual cleanup
-            pass
+            if self.image:
+                self.client.images.remove(image=self.image.id)
+        finally:
+            self.client.containers.prune()
+            self.client.images.prune()
