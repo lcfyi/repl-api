@@ -122,5 +122,5 @@ class CodeRunner:
             except AttributeError:
                 if self.image:
                     self.client.images.remove(image=self.image.id, force=True)
-        except discord.errors.APIError:
+        except docker.errors.APIError:
             pass
