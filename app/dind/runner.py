@@ -97,7 +97,10 @@ class CodeRunner:
                     if i < config.MAX_LINES_RETURNED
                 ]
                 if timeout:
-                    output = ["Timed out. Output:"] + output
+                    if len(output):
+                        output = ["Timed out. Output:\n"] + output
+                    else:
+                        output = ["Timed out."]
                 return "".join(output)
             except docker.errors.ContainerError:
                 return "Container failed to run!"
