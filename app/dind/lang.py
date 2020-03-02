@@ -11,3 +11,5 @@ class Language(Enum):
     javascript = 1
     java = 2
     python = 3
+    c = 4
+    cpp = 5
