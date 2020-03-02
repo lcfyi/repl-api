@@ -73,7 +73,7 @@ class CodeRunner:
                     pids_limit=config.DOCKER_MAX_PID,
                     detach=True,
                     ulimits=[nproc_limit, core_limit, fsize_limit, cpu_limit],
-                    security_opt=["no-new-privileges:true"],
+                    security_opt=["no-new-privileges=true"],
                 )
                 start = time.time()
                 timeout = True
