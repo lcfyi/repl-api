@@ -76,10 +76,12 @@ class CodeRunner:
                     security_opt=["no-new-privileges:true"],
                 )
                 start = time.time()
+                timeout = True
                 while time.time() - start <= config.DOCKER_TIMEOUT_S:
                     time.sleep(0.2)
                     self.container.reload()
                     if self.container.status == "exited":
+                        timeout = False
                         break
                 if self.container.status == "running":
                     logging.warn(f"Container {self.filename} timed out, killing.")
@@ -87,7 +89,7 @@ class CodeRunner:
                         self.container.kill()
                     except docker.errors.APIError:
                         pass
-                return "".join(
+                output = "".join(
                     [
                         "...\n"
                         if i == config.MAX_LINES_RETURNED - 1
@@ -96,6 +98,9 @@ class CodeRunner:
                         if i < config.MAX_LINES_RETURNED
                     ]
                 )
+                if timeout:
+                    output = ["Timed out."] + output
+                return output
             except docker.errors.ContainerError:
                 return "Container failed to run!"
             finally:
