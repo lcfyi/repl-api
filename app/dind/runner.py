@@ -114,10 +114,13 @@ class CodeRunner:
         clean_dir(self.tmp_path)
         # We want both to try to run every time
         try:
-            if self.container:
-                self.container.remove(force=True)
-            if self.image:
-                self.client.images.remove(image=self.image.id, force=True)
-        except AttributeError:
-            if self.image:
-                self.client.images.remove(image=self.image.id, force=True)
+            try:
+                if self.container:
+                    self.container.remove(force=True)
+                if self.image:
+                    self.client.images.remove(image=self.image.id, force=True)
+            except AttributeError:
+                if self.image:
+                    self.client.images.remove(image=self.image.id, force=True)
+        except discord.errors.APIError:
+            pass
