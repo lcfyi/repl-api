@@ -1,4 +1,6 @@
-FROM ubuntu:19.10
+FROM ubuntu:20.04
+
+ENV DEBIAN_FRONTEND="noninteractive" TZ="America/Seattle"
 
 # For gcc
 RUN apt-get update \
@@ -11,7 +13,7 @@ RUN apt-get update \
 # For Node
 RUN apt-get update \
     && apt-get install -y curl \
-    && curl -sL https://deb.nodesource.com/setup_13.x | bash \
+    && curl -sL https://deb.nodesource.com/setup_14.x | bash \
     && apt-get install -y nodejs
 
 # For Python
