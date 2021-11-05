@@ -74,6 +74,7 @@ class CodeRunner:
                     detach=True,
                     ulimits=[nproc_limit, core_limit, fsize_limit, cpu_limit],
                     security_opt=["no-new-privileges=true"],
+                    network_disabled=config.DOCKER_DISABLE_NETWORKING,
                 )
                 start = time.time()
                 timeout = True
